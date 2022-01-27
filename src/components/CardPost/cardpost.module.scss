@@ -1,0 +1,51 @@
+.content {
+  max-width: 700px;
+  margin: 0 auto;
+  line-height: 2.6rem;
+  margin-bottom: 32px;
+
+  h2 {
+    font-family: Inter;
+    font-weight: bold;
+    font-size: 28px;
+    color: var(--heading);
+
+    transition: opacity 0.2s;
+
+    &:hover {
+      opacity: 0.8;
+      cursor: pointer;
+    }
+  }
+
+  .subTitle {
+    color: var(--body);
+    font-weight: 400;
+    font-size: 18px;
+    padding: 5px 0 14px 0;
+    line-height: 26px;
+    display: block;
+  }
+}
+
+.info {
+  display: flex;
+  gap: 18px;
+  svg {
+    font-size: 20px;
+  }
+  span {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    color: var(--info);
+  }
+  time {
+    svg {
+      margin: auto 0;
+    }
+    display: flex;
+    gap: 8px;
+    color: var(--info);
+  }
+}

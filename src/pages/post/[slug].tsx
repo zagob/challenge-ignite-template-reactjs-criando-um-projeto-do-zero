@@ -1,4 +1,8 @@
 import { GetStaticPaths, GetStaticProps } from 'next';
+import { FiUser } from 'react-icons/fi';
+import { HiOutlineCalendar } from 'react-icons/hi';
+import { BiTime } from 'react-icons/bi';
+import Header from '../../components/Header';
 
 import { getPrismicClient } from '../../services/prismic';
 
@@ -26,9 +30,35 @@ interface PostProps {
   post: Post;
 }
 
-// export default function Post() {
-//   // TODO
-// }
+export default function Post() {
+  return (
+    <>
+      <Header />
+      <main>
+        <img src="/images/Banner.png" alt="banner" />
+
+        <article className={styles.article}>
+          <h1>Criando um app CRA do zero</h1>
+          <div className={styles.info}>
+            <time>
+              <HiOutlineCalendar />
+              15 Mai 2021
+            </time>
+            <span>
+              <FiUser /> Joseph Oliveira
+            </span>
+
+            <span>
+              <BiTime />4 min
+            </span>
+          </div>
+
+          <div>artigo</div>
+        </article>
+      </main>
+    </>
+  );
+}
 
 // export const getStaticPaths = async () => {
 //   const prismic = getPrismicClient();
