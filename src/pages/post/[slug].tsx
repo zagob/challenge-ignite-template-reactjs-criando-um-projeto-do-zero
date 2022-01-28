@@ -5,9 +5,11 @@ import { BiTime } from 'react-icons/bi';
 import Header from '../../components/Header';
 
 import { getPrismicClient } from '../../services/prismic';
+import Prismic from '@prismicio/client';
 
 import commonStyles from '../../styles/common.module.scss';
 import styles from './post.module.scss';
+import { RichText } from 'prismic-dom';
 
 interface Post {
   first_publication_date: string | null;
@@ -60,16 +62,55 @@ export default function Post() {
   );
 }
 
-// export const getStaticPaths = async () => {
-//   const prismic = getPrismicClient();
-//   const posts = await prismic.query(TODO);
+export const getStaticPaths: GetStaticPaths = async () => {
+  const prismic = getPrismicClient();
+  const posts = await prismic.query(
+    [Prismic.predicates.at('document.type', 'blogpost')],
+    {
+      fetch: [
+        'blogpost.next_page',
+        'blogpost.results',
+        'blogpost.uid',
+        'blogpost.title',
+        'blogpost.author',
+        'blogpost.subtitle',
+        'blogpost.slug',
+        'blogpost.content',
+      ],
+      pageSize: 1,
+    }
+  );
 
-//   // TODO
-// };
+  return {
+    paths: [],
+    fallback: true,
+  };
+};
 
-// export const getStaticProps = async context => {
-//   const prismic = getPrismicClient();
-//   const response = await prismic.getByUID(TODO);
+export const getStaticProps: GetStaticProps = async ({ params }) => {
+  const { slug } = params;
 
-//   // TODO
-// };
+  const prismic = getPrismicClient();
+  const response = await prismic.getByUID('blogpost', String(slug), {});
+  console.log(response);
+  const post = {
+    slug,
+    title: RichText.asText(response.data.title),
+    content: RichText.asHtml(response.data.content),
+    updatedAt: new Date(response.last_publication_date).toLocaleDateString(
+      "pt-BR",
+      {
+        day: "2-digit",
+        month: "long",
+        year: "numeric",
+      }
+    ),
+  };
+  console.log(post)
+  return {
+    props: {
+      data: 1,
+    },
+    revalidate: 60,
+  };
+};

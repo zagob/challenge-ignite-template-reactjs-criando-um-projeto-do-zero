@@ -1,8 +1,8 @@
-import styles from './cardpost.module.scss';
-
+import Link from 'next/link';
 import { HiOutlineCalendar } from 'react-icons/hi';
 import { FiUser } from 'react-icons/fi';
 
+import styles from './cardpost.module.scss';
 interface Post {
   uid: string;
   title: string;
@@ -20,7 +20,11 @@ export default function CardPost({
 }: Post) {
   return (
     <section className={styles.content} key={uid}>
-      <h2>{title}</h2>
+      <Link href={`/post/${uid}`}>
+        <a>
+          <h2>{title}</h2>
+        </a>
+      </Link>
       <span className={styles.subTitle}>{subtitle}</span>
 
       <div className={styles.info}>
