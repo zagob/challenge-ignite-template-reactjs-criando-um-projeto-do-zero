@@ -17,6 +17,7 @@ interface Post {
   data: {
     title: string;
     subtitle: string;
+    slug: string;
     author: string;
   };
 }
@@ -51,12 +52,8 @@ interface Prop {
 // }
 
 export default function Home({ next_page, results }: Prop) {
-  console.log('results', `${next_page}`);
   const [url, setUrl] = useState<string>('');
   const [posts, setPosts] = useState<Post[]>([]);
-
-  console.log('post', posts);
-  console.log('url', String(url));
 
   useEffect(() => {
     setPosts(results);
@@ -68,13 +65,10 @@ export default function Home({ next_page, results }: Prop) {
       return;
     }
     const request = new XMLHttpRequest();
-    console.log(url);
-
     request.open('GET', `${url}`);
 
     request.onload = function () {
       const res = JSON.parse(this.responseText);
-      console.log(res);
       setUrl(res.next_page);
       setPosts(old => [...old, ...res.results]);
     };
@@ -125,13 +119,13 @@ export const getStaticProps: GetStaticProps = async () => {
         'blogpost.title',
         'blogpost.author',
         'blogpost.subtitle',
+        'blogpost.slug',
         'blogpost.content',
       ],
       pageSize: 1,
     }
   );
 
-  // console.log(postsResponse);
   const data = {
     next_page: postsResponse.next_page,
     results: postsResponse.results.map(post => {
