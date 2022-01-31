@@ -6,6 +6,9 @@ import Prismic from '@prismicio/client';
 
 import { getPrismicClient } from '../services/prismic';
 
+import { format } from 'date-fns';
+import ptBR from 'date-fns/locale/pt-BR';
+
 import commonStyles from '../styles/common.module.scss';
 import styles from './home.module.scss';
 import { RichText } from 'prismic-dom';
@@ -29,55 +32,55 @@ interface PostPagination {
 
 interface HomeProps {
   postsPagination: PostPagination;
-  results: Post[];
+  preview: boolean;
 }
 
-interface Prop {
-  next_page: string | null;
-  results: Post[];
-}
-
-// const results: {
-//   next_page: string;
-//   results: {
-//       uid: string;
-//       data: {
-//           slug: string;
-//           subtitle: any;
-//           title: any;
-//           author: any;
-//       };
-//       first_publication_date: string;
-//   }[];
-// }
-
-export default function Home({ next_page, results }: Prop) {
-  const [url, setUrl] = useState<string>('');
+export default function Home({ postsPagination, preview }: HomeProps) {
+  console.log('preview',preview)
   const [posts, setPosts] = useState<Post[]>([]);
+  const [nextPage, setNextPage] = useState<string>('');
 
   useEffect(() => {
-    setPosts(results);
-    setUrl(next_page);
-  }, []);
+    setPosts(
+      postsPagination.results.map((post: Post) => {
+        return {
+          ...post,
+          first_publication_date: format(
+            new Date(post.first_publication_date),
+            'dd MMM yyyy',
+            { locale: ptBR }
+          ),
+        };
+      })
+    );
+    setNextPage(postsPagination.next_page);
+  }, [postsPagination.results, postsPagination.next_page]);
 
-  async function handleLoadPosts() {
-    if (url === null) {
-      return;
-    }
-    const request = new XMLHttpRequest();
-    request.open('GET', `${url}`);
+  function handlePagination(): void {
+    fetch(
+      `${nextPage}&access_token=${process.env.NEXT_PUBLIC_PRISMIC_ACCESS_TOKEN}`
+    )
+      .then(res => res.json())
+      .then(data => {
+        const formattedData = data.results.map(post => {
+          return {
+            uid: post.uid,
+            first_publication_date: format(
+              new Date(post.first_publication_date),
+              'dd MMM yyyy',
+              { locale: ptBR }
+            ),
+            data: {
+              title: post.data.title,
+              subtitle: post.data.subtitle,
+              author: post.data.author,
+            },
+          };
+        });
 
-    request.onload = function () {
-      const res = JSON.parse(this.responseText);
-      setUrl(res.next_page);
-      setPosts(old => [...old, ...res.results]);
-    };
-
-    request.onerror = function () {
-      console.log('erro ao executar a requisição');
-    };
-
-    request.send();
+        setPosts([...posts, ...formattedData]);
+        setNextPage(data.next_page);
+      });
   }
   return (
     <main className={styles.content}>
@@ -94,11 +97,11 @@ export default function Home({ next_page, results }: Prop) {
         </div>
       ))}
 
-      {url !== null && (
+      {nextPage && (
         <button
           type="button"
           className={styles.btnLoadPost}
-          onClick={handleLoadPosts}
+          onClick={handlePagination}
         >
           Carregar mais posts
         </button>
@@ -107,49 +110,78 @@ export default function Home({ next_page, results }: Prop) {
   );
 }
 
-export const getStaticProps: GetStaticProps = async () => {
+export const getStaticProps: GetStaticProps = async ({
+  preview = false,
+  previewData,
+}) => {
   const prismic = getPrismicClient();
   const postsResponse = await prismic.query(
     [Prismic.predicates.at('document.type', 'blogpost')],
     {
-      fetch: [
-        'blogpost.next_page',
-        'blogpost.results',
-        'blogpost.uid',
-        'blogpost.title',
-        'blogpost.author',
-        'blogpost.subtitle',
-        'blogpost.slug',
-        'blogpost.content',
-      ],
-      pageSize: 1,
+      fetch: ['post.title', 'post.subtitle', 'post.author'],
+      pageSize: 2,
+      ref: previewData?.ref ?? null,
     }
   );
 
-  const data = {
-    next_page: postsResponse.next_page,
-    results: postsResponse.results.map(post => {
-      return {
-        uid: post.uid,
-        data: {
-          slug: post.uid,
-          subtitle: post.data.subtitle,
-          title: post.data.title,
-          author: post.data.author,
-        },
-        first_publication_date: new Date(post.last_publication_date)
-          .toLocaleDateString('pt-BR', {
-            day: '2-digit',
-            month: 'short',
-            year: 'numeric',
-          })
-          .replace(/[de.]/g, ''),
-      };
-    }),
-  };
+  const posts = postsResponse.results.map(post => {
+    return {
+      uid: post.uid,
+      first_publication_date: post.first_publication_date,
+      data: {
+        title: post.data.title,
+        subtitle: post.data.subtitle,
+        author: post.data.author,
+      },
+    };
+  });
+
+  // const postsResponse = await prismic.query(
+  //   [Prismic.predicates.at('document.type', 'blogpost')],
+  //   {
+  //     fetch: [
+  //       'blogpost.next_page',
+  //       'blogpost.results',
+  //       'blogpost.uid',
+  //       'blogpost.title',
+  //       'blogpost.author',
+  //       'blogpost.subtitle',
+  //       'blogpost.slug',
+  //       'blogpost.content',
+  //     ],
+  //     pageSize: 1,
+  //   }
+  // );
+
+  // const data = {
+  //   next_page: postsResponse.next_page,
+  //   results: postsResponse.results.map(post => {
+  //     return {
+  //       uid: post.uid,
+  //       data: {
+  //         slug: post.uid,
+  //         subtitle: post.data.subtitle,
+  //         title: post.data.title,
+  //         author: post.data.author,
+  //       },
+  //       first_publication_date: new Date(post.last_publication_date)
+  //         .toLocaleDateString('pt-BR', {
+  //           day: '2-digit',
+  //           month: 'short',
+  //           year: 'numeric',
+  //         })
+  //         .replace(/[de.]/g, ''),
+  //     };
+  //   }),
+  // };
 
   return {
-    props: data,
-    revalidate: 60,
+    props: {
+      postsPagination: {
+        results: posts,
+        next_page: postsResponse.next_page,
+      },
+      preview,
+    },
   };
 };

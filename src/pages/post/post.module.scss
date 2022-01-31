@@ -1,3 +1,10 @@
+.main {
+  img {
+    width: 100%;
+    object-fit: cover;
+  }
+}
+
 .article {
   max-width: 721px;
   margin: 0 auto;
@@ -20,6 +27,37 @@
       display: flex;
       align-items: center;
       color: var(--info);
+    }
+  }
+}
+
+.postSection {
+  font-size: 1.125rem;
+  color: var(--gray-200);
+  text-align: justify;
+  margin-bottom: 4rem;
+
+  p {
+    line-height: 1.5rem;
+  }
+
+  p + p {
+    margin-top: 1.5rem;
+  }
+
+  a {
+    color: var(--pink-300);
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+
+  ul {
+    margin: 1rem 2rem;
+
+    li + li {
+      margin-top: 1rem;
     }
   }
 }
