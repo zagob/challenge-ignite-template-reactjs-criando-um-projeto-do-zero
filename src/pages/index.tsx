@@ -58,7 +58,7 @@ export default function Home({ postsPagination, preview }: HomeProps) {
 
   function handlePagination(): void {
     fetch(
-      `${nextPage}&access_token=${process.env.NEXT_PUBLIC_PRISMIC_ACCESS_TOKEN}`
+      `${nextPage}&access_token=${process.env.PRISMIC_API_ENDPOINT}`
     )
       .then(res => res.json())
       .then(data => {
